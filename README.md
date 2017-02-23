@@ -4,6 +4,8 @@
 
 See it in action [here](https://releasewatcher-49645.firebaseapp.com/).
 
+I recommend using an access token for Github API. You can generate one [here](https://github.com/settings/tokens).
+
 ## Build Setup
 
 ``` bash
