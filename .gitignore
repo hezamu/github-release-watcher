@@ -8,6 +8,7 @@
 .project
 .tmpBin
 .idea
+token.txt
 public/target
 project/project/target
 project/target
