@@ -1,6 +1,7 @@
 package releasewatcher
 
 import org.scalajs.dom
+import releasewatcher.firebase.auth.GithubAuthProvider
 import releasewatcher.firebase.{Firebase, User}
 
 import scala.concurrent.Future
@@ -29,18 +30,27 @@ case class Pair(a: Int, b: Int) {
 }
 
 object App extends JSApp {
+  var token = ""
   def main(): Unit = {
     println("Initing app")
 
-    Firebase.auth().onAuthStateChanged{
-      _ map { user: User =>
-        println(s"${user.uid} logged in: anon: ${user.isAnonymous}")
-        doTheThing()
-        user
-      } getOrElse println("No user :(")
-    }
+    Firebase.auth().onAuthStateChanged { _ map { user: User =>
+      println(s"${user.email} logged in")
+      user
+    } getOrElse println("No user :(") }
 
-    Firebase.auth().signInAnonymously() `catch` { error =>
+
+    Firebase.auth().signInWithPopup(new GithubAuthProvider()).`then` { result =>
+      val dynResult = result.asInstanceOf[js.Dynamic]
+
+      token = dynResult.credential.accessToken.toString
+
+      val user = dynResult.user.asInstanceOf[User]
+      println(s"${user.email} signed in")
+      
+      doTheThing()
+
+    }.`catch` { error =>
       println(s"Sign in error: ${error.getMessage}")
     }
   }
@@ -51,19 +61,20 @@ object App extends JSApp {
     //      dom.document.head.appendChild(style(Styles.styleSheetText).render)
     //      dom.document.body.applyTags(Styles.body)
 
-    val repos = Seq("vaadin-combo-box", "framework")
-//      "vaadin-grid", "vaadin-context-menu",
-//      "vaadin-split-layout", "vaadin-date-picker", "vaadin-upload", "vaadin-input",
-//      "vaadin-form-layout", "framework", "charts", "board", "cdi", "vaadin-charts",
-//      "spring", "testbench", "spreadsheet", "designer"
-//    )
+    val repos = Seq("vaadin-combo-box", "framework", "designer", "vaadin-grid",
+      "vaadin-context-menu", "vaadin-combo-box", "vaadin-grid", "vaadin-context-menu",
+      "vaadin-split-layout", "vaadin-date-picker", "vaadin-upload", "vaadin-input",
+      "vaadin-form-layout", "vaadin-button", "framework", "spring", "testbench", "charts",
+      "spreadsheet", "board", "vaadin-icons", "vaadin-button", "vaadin-text-field",
+      "vaadin-charts", "vaadin-form-layout", "vaadin-button", "maven-plugin", "cdi",
+      "eclipse-plugin")
 
     val fs = repos map { repo =>
       dom.ext.Ajax.get(s"https://api.github.com/repos/vaadin/$repo/releases")
     }
 
     // Lift potentially failed XHRs into Failure's
-    val lifted = fs.map(_.map(Success(_)).recover{ case ex => Failure(ex) })
+    val lifted = fs.map(_.map(Success(_)).recover { case ex => Failure(ex) })
 
     // Convert the sequence of futures into a future of sequences.
     // Collect will only accept succeeded XHRs.
@@ -91,58 +102,3 @@ object App extends JSApp {
     }
   }
 }
-/*
-    <iron-ajax url="https://api.github.com/repos/vaadin/[[repo]]/releases" last-response="{{releases}}" auto></iron-ajax>
-    <vaadin-grid items=[[data]]>
-      <vaadin-grid-column flex-grow="0" width="150px">
-        <template class="header">Element</template>
-        <template>[[_elementName(item.url)]]</template>
-      </vaadin-grid-column>
-      <vaadin-grid-column>
-        <template class="header">Release</template>
-        <template><a href="[[item.html_url]]" target="_blank">[[item.name]]</a></template>
-      </vaadin-grid-column>
-      <vaadin-grid-column>
-        <template class="header">Published</template>
-        <template>[[item.published_at]]</template>
-      </vaadin-grid-column>
-    </vaadin-grid>
-  </template>
-  <script>
-    addEventListener('WebComponentsReady', function() {
-      Polymer({
-        is: 'vaadin-releases',
-
-        observers: ['_releasesChanged(releases)'],
-
-        ready: function() {
-          this.repos = ['vaadin-combo-box', 'vaadin-grid', 'vaadin-context-menu', 'vaadin-split-layout', 'vaadin-date-picker', 'vaadin-upload', 'vaadin-input', 'vaadin-form-layout', 'vaadin-button', 'framework', 'spring', 'testbench', 'charts', 'spreadsheet', 'board', 'vaadin-icons', 'vaadin-button', 'vaadin-text-field', 'vaadin-charts', 'vaadin-form-layout', 'vaadin-button', 'maven-plugin', 'cdi', 'eclipse-plugin'];
-
-          this.repo = this.repos.pop();
-        },
-
-        _releasesChanged: function(releases) {
-          this._data = this._data || [];
-          this._data = this._data.concat(releases);
-
-          this.debounce('fetching', function() {
-            this._data.sort(function(a,b) {
-              return a.published_at < b.published_at ? 1 : -1;
-            });
-
-						this.data = this._data;
-          }, 500);
-
-          if (this.repos.length > 0) {
-	          this.repo = this.repos.pop();
-          }
-        },
-
-        _elementName: function(url) {
-					return url ? url.split('/')[5] : '';
-        }
-      });
-    });
-  </script>
-</dom-module>
- */
