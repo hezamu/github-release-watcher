@@ -1,4 +1,4 @@
-# Github Release Watcher
+tou# Github Release Watcher
 
 > A simple Scala.js app to list releases in for one or more projects in Github.
 
