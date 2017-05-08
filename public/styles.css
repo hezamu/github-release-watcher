@@ -1,0 +1,16 @@
+body {
+    margin: 0;
+    display: "flex";
+    background-color: "white";
+    height: 100%;
+    width: 100%;
+    font-family: 'Helvetica Neue', 'Calibri Light', Roboto, sans-serif;
+)
+
+table {
+    width: 100%;
+}
+
+thead {
+    font-weight: "bold";
+}

@@ -5,21 +5,24 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
         <title>Vaadin releases in Github</title>
         <meta name="author" content="Henri Muurimaa">
-        <script type="text/javascript" src="https://www.gstatic.com/firebasejs/3.6.10/firebase.js"></script>
+        <link rel="stylesheet" type="text/css" href="./styles.css">
+    </head>
+
+    <body margin=0>
+        <script src="https://www.gstatic.com/firebasejs/3.9.0/firebase.js"></script>
         <script>
             // Initialize Firebase
             var config = {
-                apiKey: "AIzaSyD89YwWHjgFMR5EAuTh-Zd8NNIOekhCpWY",
-                authDomain: "releasewatcher-49645.firebaseapp.com",
-                databaseURL: "https://releasewatcher-49645.firebaseio.com",
-                storageBucket: "releasewatcher-49645.appspot.com",
-                messagingSenderId: "457050524631"
+                apiKey: "AIzaSyAWYIjCi87IknGA9I2gZyj3oaZQ2zvwFXE",
+                authDomain: "vaadin-release-watcher.firebaseapp.com",
+                databaseURL: "https://vaadin-release-watcher.firebaseio.com",
+                projectId: "vaadin-release-watcher",
+                storageBucket: "vaadin-release-watcher.appspot.com",
+                messagingSenderId: "428805795144"
             };
             firebase.initializeApp(config);
         </script>
-        <!-- CSS is constructed using Scalatags and injected at runtime -->
-    </head>
-    <body margin=0>
+
         <!-- The DOM is built dynamically using Scalatags -->
         <script type="text/javascript" src="target/scala-2.12/releasewatcher-opt.js"></script>
         <script>releasewatcher.App().main()</script>

@@ -1,8 +1,8 @@
-tou# Github Release Watcher
+# Github Release Watcher
 
 > A simple Scala.js app to list releases in for one or more projects in Github.
 
-See it in action [here](https://releasewatcher-49645.firebaseapp.com/).
+See it in action [here](https://vaadin-release-watcher.firebaseapp.com/).
 
 I recommend using an access token for Github API. You can generate one [here](https://github.com/settings/tokens).
 
