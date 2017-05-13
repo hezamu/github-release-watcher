@@ -2,9 +2,7 @@
 
 > A simple Scala.js app to list releases in for one or more projects in Github.
 
-See it in action [here](https://vaadin-release-watcher.firebaseapp.com/).
-
-I recommend using an access token for Github API. You can generate one [here](https://github.com/settings/tokens).
+You need authenticate with your Github account to see the releases. See it in action at [vaadin-release-watcher.firebaseapp.com](https://vaadin-release-watcher.firebaseapp.com/). 
 
 ## Build Setup
 
