@@ -1,5 +1,5 @@
 {
   "projects": {
-    "default": "releasewatcher-49645"
+    "default": "vaadin-release-watcher"
   }
 }

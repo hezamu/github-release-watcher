@@ -4,55 +4,56 @@ import org.scalajs.dom
 import releasewatcher.firebase.auth.GithubAuthProvider
 import releasewatcher.firebase.{Firebase, User}
 
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.scalajs.js
 import scala.scalajs.js.JSApp
 import scala.util.{Failure, Success}
-import scalatags.JsDom.all._
-import scala.concurrent.ExecutionContext.Implicits.global
 
-case class Release(repo: String, tag: String, time: String, description: String) {
-  def formattedTime: String = {
-    val cs = time.split("-")
-    s"${cs(2) take 2}.${cs(1)}.${cs(0)}"
-  }
+@js.native
+trait Release extends js.Object {
+  val repo: String = js.native
+  val tag: String = js.native
+  val rawTime: String = js.native
+  val time: String = js.native
+  val description: String = js.native
 }
 
 object Release {
   def apply(json: js.Dynamic): Release = {
     val repo = json.url.toString.split("/")(5)
-    Release(repo, json.tag_name.toString, json.published_at.toString, json.body.toString)
-  }
-}
+    val cs = json.published_at.toString.split("-")
+    val time = s"${cs(2) take 2}.${cs(1)}.${cs(0)}"
 
-case class Pair(a: Int, b: Int) {
-  def next = Pair(b, a + b)
+    js.Dynamic.literal(repo = repo, tag = json.tag_name, rawTime = json.published_at, time = time, description = json.body).asInstanceOf[Release]
+  }
 }
 
 object App extends JSApp {
-  var token = ""
-  
   def main(): Unit = {
-    Firebase.auth().onAuthStateChanged { _ map { user: User =>
-      user
-    } getOrElse println("No user :(") }
-
-    Firebase.auth().signInWithPopup(new GithubAuthProvider()).`then` { r =>
+    Firebase.auth().getRedirectResult() `then` { r =>
       val result = r.asInstanceOf[js.Dynamic]
-
-      token = result.credential.accessToken.toString
       val user = result.user.asInstanceOf[User]
 
-      println(s"${user.email} signed in")
+      if(user != null) {
+        println(s"${user.email} signed in")
 
-      showReleases()
+        showReleases(result.credential.accessToken.toString)
+      } else {
+        // No user, authorize
+        val provider = new GithubAuthProvider()
+        provider.addScope("repo")
 
-    }.`catch` { error =>
-      println(s"Sign in error: ${error.getMessage}")
+        Firebase.auth().signInWithRedirect(provider)
+      }
+    } `catch` { error =>
+      println(s"Error: ${error.getMessage}")
     }
   }
 
-  private def showReleases(): Unit = {
+  private lazy val releaseTable = dom.document.body.querySelector("#grid").asInstanceOf[js.Dynamic]
+
+  private def showReleases(token: String): Unit = {
     val repos = Seq("vaadin-combo-box", "framework", "designer", "vaadin-grid",
       "vaadin-context-menu", "vaadin-combo-box", "vaadin-grid", "vaadin-context-menu",
       "vaadin-split-layout", "vaadin-date-picker", "vaadin-upload", "vaadin-input",
@@ -70,25 +71,18 @@ object App extends JSApp {
 
     // Convert the sequence of futures into a future of sequences.
     // Collect will only accept succeeded XHRs.
-    val releases: Future[Seq[Seq[Release]]] = Future.sequence(lifted) map {
-      _ collect {
+    val releases: Future[Seq[Seq[Release]]] = Future.sequence(lifted) map { _ collect {
         case Success(xhr) => // Parse the successful responses
           js.JSON.parse(xhr.responseText).asInstanceOf[js.Array[js.Dynamic]].toSeq map Release.apply
       }
     }
 
-    // Trigger the XHRs and set up the callback to build the page based on responses
+    // Trigger the XHRs and set up the callback to build the result table based on response
     releases onComplete {
       case Success(rrs: Seq[Seq[Release]]) =>
-        val sorted: Seq[Release] = rrs.flatten sortBy {
-          _.time
-        } reverse
+        releaseTable.items = (rrs.flatten sortBy { _.rawTime }).reverse.to[js.Array]
 
-        dom.document.body.appendChild(table(
-          thead(td("Product"), td("Release"), td("Published"), td("Description")),
-
-          for(r <- sorted) yield tr(td(r.repo), td(r.tag), td(r.formattedTime) /*, td(r.description)*/)
-        ).render)
+        dom.document.body.querySelector("#loading").classList.add("hidden") // Hide loading message
 
       case Failure(_) => // Just to make the compiler happy.
     }
