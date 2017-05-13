@@ -2,7 +2,7 @@
 
 > A simple Scala.js app to list releases in for one or more projects in Github.
 
-The app authenticates with your Github account to fetch the releases from the Github API. The release data is displayed in a [<vaadin-grid>](https://vaadin.com/elements/-/element/vaadin-grid).
+The app authenticates with your Github account to fetch the releases from the Github API. The release data is displayed using the [vaadin-grid](https://vaadin.com/elements/-/element/vaadin-grid) custom element.
 
 ## Demo
 See the app in action at [vaadin-release-watcher.firebaseapp.com](https://vaadin-release-watcher.firebaseapp.com/) 
