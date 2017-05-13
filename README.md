@@ -2,9 +2,16 @@
 
 > A simple Scala.js app to list releases in for one or more projects in Github.
 
-You need authenticate with your Github account to see the releases. See it in action at [vaadin-release-watcher.firebaseapp.com](https://vaadin-release-watcher.firebaseapp.com/). 
+The app authenticates with your Github account to fetch the releases from the Github API. The release data is displayed in a [<vaadin-grid>](https://vaadin.com/elements/-/element/vaadin-grid).
 
-## Build Setup
+## Demo
+See the app in action at [vaadin-release-watcher.firebaseapp.com](https://vaadin-release-watcher.firebaseapp.com/) 
+
+## Configuration
+Alter the `organization` and `repos` vals in App object to choose which repositories to look at.
+
+## Buildingand running
+This is a SBT project.
 
 ``` bash
 # Start SBT
@@ -14,7 +21,7 @@ $ sbt
 sbt> ~fastOptJS
 ```
 
-You also need to serve the project directory over HTTP to access it with your browser. Eg. with Python:
+You need to serve the project directory over HTTP to access it with your browser. Eg. with Python:
 ```
 $ python -c "import BaseHTTPServer as bhs, SimpleHTTPServer as shs; bhs.HTTPServer((\"127.0.0.1\", 8888), shs.SimpleHTTPRequestHandler).serve_forever()"
 ```

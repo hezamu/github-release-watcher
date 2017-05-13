@@ -30,6 +30,16 @@ object Release {
 }
 
 object App extends JSApp {
+  val organization = "vaadin"
+
+  val repos = Seq("vaadin-combo-box", "framework", "designer", "vaadin-grid",
+    "vaadin-context-menu", "vaadin-combo-box", "vaadin-grid", "vaadin-context-menu",
+    "vaadin-split-layout", "vaadin-date-picker", "vaadin-upload", "vaadin-input",
+    "vaadin-form-layout", "vaadin-button", "framework", "spring", "testbench", "charts",
+    "spreadsheet", "board", "vaadin-icons", "vaadin-button", "vaadin-text-field",
+    "vaadin-charts", "vaadin-form-layout", "vaadin-button", "maven-plugin", "cdi",
+    "eclipse-plugin", "vaadin-board", "flow")
+
   def main(): Unit = {
     Firebase.auth().getRedirectResult() `then` { r =>
       val result = r.asInstanceOf[js.Dynamic]
@@ -54,20 +64,12 @@ object App extends JSApp {
   private lazy val releaseTable = dom.document.body.querySelector("#grid").asInstanceOf[js.Dynamic]
 
   private def showReleases(token: String): Unit = {
-    val repos = Seq("vaadin-combo-box", "framework", "designer", "vaadin-grid",
-      "vaadin-context-menu", "vaadin-combo-box", "vaadin-grid", "vaadin-context-menu",
-      "vaadin-split-layout", "vaadin-date-picker", "vaadin-upload", "vaadin-input",
-      "vaadin-form-layout", "vaadin-button", "framework", "spring", "testbench", "charts",
-      "spreadsheet", "board", "vaadin-icons", "vaadin-button", "vaadin-text-field",
-      "vaadin-charts", "vaadin-form-layout", "vaadin-button", "maven-plugin", "cdi",
-      "eclipse-plugin", "vaadin-board", "flow")
-
-    val fs = repos map { repo =>
-      dom.ext.Ajax.get(s"https://api.github.com/repos/vaadin/$repo/releases?access_token=$token")
+    val urls = repos map { repo =>
+      dom.ext.Ajax.get(s"https://api.github.com/repos/$organization/$repo/releases?access_token=$token")
     }
 
     // Lift potentially failed XHRs into Failure's
-    val lifted = fs.map(_.map(Success(_)).recover { case ex => Failure(ex) })
+    val lifted = urls.map(_.map(Success(_)).recover { case ex => Failure(ex) })
 
     // Convert the sequence of futures into a future of sequences.
     // Collect will only accept succeeded XHRs.
