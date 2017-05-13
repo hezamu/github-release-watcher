@@ -50,7 +50,7 @@ object App extends JSApp {
 
         showReleases(result.credential.accessToken.toString)
       } else {
-        // No user, authorize
+        // No user, authenticate
         val provider = new GithubAuthProvider()
         provider.addScope("repo")
 
