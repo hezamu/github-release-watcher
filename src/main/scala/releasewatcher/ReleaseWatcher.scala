@@ -34,6 +34,8 @@ object Release {
     js.Dynamic.literal(repo = repo, tag = json.tag_name, rawTime = json.published_at, time = time, description = json.body).asInstanceOf[Release]
   }
 
+  def duplicate(r: Release)(other: Release): Boolean = r.repo == other.repo && r.tag == other.tag
+
   def str(r: Release): String = s"${r.rawTime}, ${r.repo}, ${r.tag}"
 }
 
@@ -122,9 +124,16 @@ object App extends JSApp {
       case Success(rrs: Seq[Seq[Release]]) =>
         loadingLabel.innerHTML = s"Updating..."
 
-        releases = (rrs.flatten filter { _.rawTime != null } sortBy { _.rawTime }).reverse.to[js.Array]
+        // Org admins can see unreleased tags
+        val released: Seq[Release] = rrs.flatten filter { _.rawTime != null }
 
-        setTimeout(1) {
+        val deduped: Seq[Release] = released.foldLeft[Seq[Release]] (Seq[Release]()) {
+          case (accu, r) => if(accu exists Release.duplicate(r)) accu else accu :+ r
+        }
+
+        releases = deduped.sortBy(_.rawTime).reverse.to[js.Array]
+
+        setTimeout(1) { // Make sure the loading label updates before starting lazy load
           releaseGrid.size = releases.size
 
           releaseGrid.dataProvider = { (params: DataProviderParams, callback: js.Dynamic) =>
