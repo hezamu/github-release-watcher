@@ -44,13 +44,14 @@ package firebase {
 
   @js.native
   trait User extends firebase.UserInfo {
+    var emailVerified: Boolean = js.native
+    var isAnonymous: Boolean = js.native
+    var providerData: js.Array[firebase.UserInfo | Null] = js.native
+    var refreshToken: String = js.native
+
     def delete(): firebase.Promise[js.Any] = js.native
 
-    var emailVerified: Boolean = js.native
-
     def getToken(forceRefresh: Boolean = ???): firebase.Promise[js.Any] = js.native
-
-    var isAnonymous: Boolean = js.native
 
     def link(credential: firebase.auth.AuthCredential): firebase.Promise[js.Any] = js.native
 
@@ -58,11 +59,7 @@ package firebase {
 
     def linkWithRedirect(provider: firebase.auth.AuthProvider): firebase.Promise[js.Any] = js.native
 
-    var providerData: js.Array[firebase.UserInfo | Null] = js.native
-
     def reauthenticate(credential: firebase.auth.AuthCredential): firebase.Promise[js.Any] = js.native
-
-    var refreshToken: String = js.native
 
     def reload(): firebase.Promise[js.Any] = js.native
 
@@ -90,14 +87,14 @@ package firebase {
 
     @js.native
     trait App extends js.Object {
+      var name: String = js.native
+      var options: Object = js.native
+
       def auth(): firebase.auth.Auth = js.native
 
       def database(): firebase.database.Database = js.native
 
       def delete(): firebase.Promise[js.Any] = js.native
-
-      var name: String = js.native
-      var options: Object = js.native
 
       def storage(): firebase.storage.Storage = js.native
     }
@@ -113,6 +110,8 @@ package firebase {
     @js.native
     trait Auth extends js.Object {
       var app: firebase.app.App = js.native
+      //      var currentUser: firebase.User | Null = js.native
+      var currentUser: js.UndefOr[firebase.User] = js.native
 
       def applyActionCode(code: String): firebase.Promise[js.Any] = js.native
 
@@ -124,14 +123,11 @@ package firebase {
 
       def createUserWithEmailAndPassword(email: String, password: String): firebase.Promise[js.Any] = js.native
 
-//      var currentUser: firebase.User | Null = js.native
-      var currentUser: js.UndefOr[firebase.User] = js.native
-
       def fetchProvidersForEmail(email: String): firebase.Promise[js.Any] = js.native
 
       def getRedirectResult(): firebase.Promise[js.Any] = js.native
 
-//      def onAuthStateChanged(nextOrObserver: Object, error: js.Function1[firebase.auth.Error, Any] = ???, completed: js.Function0[Any] = ???): js.Function0[Any] = js.native
+      //      def onAuthStateChanged(nextOrObserver: Object, error: js.Function1[firebase.auth.Error, Any] = ???, completed: js.Function0[Any] = ???): js.Function0[Any] = js.native
       def onAuthStateChanged(callback: js.Function1[js.UndefOr[User], Any]): js.Any = js.native
 
       def sendPasswordResetEmail(email: String): firebase.Promise[js.Any] = js.native
@@ -287,6 +283,9 @@ package firebase {
 
     @js.native
     trait DataSnapshot extends js.Object {
+      var key: String | Null = js.native
+      var ref: firebase.database.Reference = js.native
+
       def child(path: String): firebase.database.DataSnapshot = js.native
 
       def exists(): Boolean = js.native
@@ -301,11 +300,7 @@ package firebase {
 
       def hasChildren(): Boolean = js.native
 
-      var key: String | Null = js.native
-
       def numChildren(): Double = js.native
-
-      var ref: firebase.database.Reference = js.native
 
       def `val`(): js.Dynamic = js.native
     }
@@ -338,6 +333,8 @@ package firebase {
 
     @js.native
     trait Query extends js.Object {
+      var ref: firebase.database.Reference = js.native
+
       def endAt(value: Double | String | Boolean | Null, key: String = ???): firebase.database.Query = js.native
 
       def equalTo(value: Double | String | Boolean | Null, key: String = ???): firebase.database.Query = js.native
@@ -362,8 +359,6 @@ package firebase {
 
       def orderByValue(): firebase.database.Query = js.native
 
-      var ref: firebase.database.Reference = js.native
-
       def startAt(value: Double | String | Boolean | Null, key: String = ???): firebase.database.Query = js.native
 
       override def toString(): String = js.native
@@ -371,19 +366,17 @@ package firebase {
 
     @js.native
     trait Reference extends firebase.database.Query {
+      var key: String | Null = js.native
+      var parent: firebase.database.Reference | Null = js.native
+      var root: firebase.database.Reference = js.native
+
       def child(path: String): firebase.database.Reference = js.native
 
-      var key: String | Null = js.native
-
       def onDisconnect(): firebase.database.OnDisconnect = js.native
-
-      var parent: firebase.database.Reference | Null = js.native
 
       def push(value: js.Any = ???, onComplete: js.Function1[Error | Null, Any] = ???): firebase.database.ThenableReference = js.native
 
       def remove(onComplete: js.Function1[Error | Null, Any] = ???): firebase.Promise[js.Any] = js.native
-
-      var root: firebase.database.Reference = js.native
 
       def set(value: js.Any, onComplete: js.Function1[Error | Null, Any] = ???): firebase.Promise[js.Any] = js.native
 
@@ -457,26 +450,23 @@ package firebase {
     @js.native
     trait Reference extends js.Object {
       var bucket: String = js.native
+      var fullPath: String = js.native
+      var name: String = js.native
+      var parent: firebase.storage.Reference | Null = js.native
+      var root: firebase.storage.Reference = js.native
+      var storage: firebase.storage.Storage = js.native
 
       def child(path: String): firebase.storage.Reference = js.native
 
       def delete(): firebase.Promise[js.Any] = js.native
 
-      var fullPath: String = js.native
-
       def getDownloadURL(): firebase.Promise[js.Any] = js.native
 
       def getMetadata(): firebase.Promise[js.Any] = js.native
 
-      var name: String = js.native
-      var parent: firebase.storage.Reference | Null = js.native
-
       def put(data: js.Any, metadata: firebase.storage.UploadMetadata = ???): firebase.storage.UploadTask = js.native
 
       def putString(data: String, format: firebase.storage.Storage.StringFormat = ???, metadata: firebase.storage.UploadMetadata = ???): firebase.storage.UploadTask = js.native
-
-      var root: firebase.storage.Reference = js.native
-      var storage: firebase.storage.Storage = js.native
 
       override def toString(): String = js.native
 
@@ -540,6 +530,8 @@ package firebase {
 
     @js.native
     trait UploadTask extends js.Object {
+      var snapshot: firebase.storage.UploadTaskSnapshot = js.native
+
       def cancel(): Boolean = js.native
 
       def `catch`(onRejected: js.Function1[Error, Any]): firebase.Promise[js.Any] = js.native
@@ -549,8 +541,6 @@ package firebase {
       def pause(): Boolean = js.native
 
       def resume(): Boolean = js.native
-
-      var snapshot: firebase.storage.UploadTaskSnapshot = js.native
 
       def then(onFulfilled: js.Function1[firebase.storage.UploadTaskSnapshot, Any] | Null = ???, onRejected: js.Function1[Error, Any] | Null = ???): firebase.Promise[js.Any] = js.native
     }
@@ -580,10 +570,9 @@ package firebase {
   @js.native
   object Firebase extends js.Object {
     var SDK_VERSION: String = js.native
+    var apps: js.Array[firebase.app.App | Null] = js.native
 
     def app(name: String = ???): firebase.app.App = js.native
-
-    var apps: js.Array[firebase.app.App | Null] = js.native
 
     def auth(app: firebase.app.App = ???): firebase.auth.Auth = js.native
 

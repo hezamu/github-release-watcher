@@ -11,22 +11,22 @@
     </head>
 
     <body margin=0>
-        <label id="loading">Loading...</label>
+        <label id="loading">Authenticating...</label>
 
         <vaadin-grid id="grid">
             <vaadin-grid-column width="100px" flex-grow="0">
                 <template class="header">Date</template>
                 <template>[[item.time]]</template>
             </vaadin-grid-column>
-            <vaadin-grid-column class="repo" width="calc(25% - 50px)">
+            <vaadin-grid-column class="repo" width="100px" flex-grow="1">
                 <template class="header">Product</template>
                 <template>[[item.repo]]</template>
             </vaadin-grid-column>
-            <vaadin-grid-column class="tag" width="calc(25% - 50px)">
+            <vaadin-grid-column class="tag" width="75px" flex-grow="1">
                 <template class="header">Release</template>
                 <template>[[item.tag]]</template>
             </vaadin-grid-column>
-            <vaadin-grid-column>
+            <vaadin-grid-column flex-grow="10">
                 <template class="header">Description</template>
                 <template>[[item.description]]</template>
             </vaadin-grid-column>
