@@ -57,27 +57,34 @@ object App extends JSApp {
     "eclipse-plugin", "vaadin-board", "flow")
 
   def main(): Unit = {
-    Firebase.auth().getRedirectResult() `then` { r =>
-      val result = r.asInstanceOf[js.Dynamic]
-      val user = result.user.asInstanceOf[User]
-
-      if(user != null) {
-        println(s"${user.email} signed in")
-
-        loadingLabel.innerHTML = s"Fetching releases for ${repos.size} repositories..."
-
-        showReleases(result.credential.accessToken.toString)
-      } else {
-        // No user, authenticate
-        val provider = new GithubAuthProvider()
-        provider.addScope("repo")
-
-        Firebase.auth().signInWithRedirect(provider)
-      }
-    } `catch` { error =>
-      if(error == null) println(s"Redirect error: NULL")
-      else println(s"Redirect error: $error")
+    Option(dom.window.localStorage.getItem("github-token")) match {
+      case Some(token) =>
+        println("Using stored token")
+        showReleases(token)
+      case None => signIn()
     }
+  }
+
+  private def signIn(): Unit = Firebase.auth().getRedirectResult() `then` { r =>
+    val result = r.asInstanceOf[js.Dynamic]
+    val user = result.user.asInstanceOf[User]
+
+    if(user != null) {
+      println(s"${user.email} signed in")
+
+      dom.window.localStorage.setItem("github-token", result.credential.accessToken.toString)
+
+      showReleases(result.credential.accessToken.toString)
+    } else {
+      // No user, authenticate
+      val provider = new GithubAuthProvider()
+      provider.addScope("repo")
+
+      Firebase.auth().signInWithRedirect(provider)
+    }
+  } `catch` { error =>
+    if(error == null) println(s"Redirect error: NULL")
+    else println(s"Redirect error: $error")
   }
 
   private lazy val releaseGrid = dom.document.body.querySelector("#grid").asInstanceOf[js.Dynamic]
@@ -87,6 +94,10 @@ object App extends JSApp {
   private var releases: js.Array[Release] = js.Array()
 
   private def showReleases(token: String): Unit = {
+    loadingLabel.innerHTML = s"Fetching releases for ${repos.size} repositories..."
+
+    var forwarded = false
+
     val urls = repos map { repo =>
       dom.ext.Ajax.get(s"https://api.github.com/repos/$organization/$repo/releases?access_token=$token")
     }
@@ -99,6 +110,10 @@ object App extends JSApp {
 
       case ex =>
         println(s"XHR error: $ex")
+        if(!forwarded) {
+          signIn()
+          forwarded = true
+        }
         Failure(ex)
     })
 
@@ -125,7 +140,7 @@ object App extends JSApp {
         loadingLabel.innerHTML = s"Updating..."
 
         // Org admins can see unreleased tags
-        val released: Seq[Release] = rrs.flatten filter { _.rawTime != null }
+        val released: Seq[Release] = rrs.flatten filter { r => r.rawTime != null && r.repo != "-" }
 
         val deduped: Seq[Release] = released.foldLeft[Seq[Release]] (Seq[Release]()) {
           case (accu, r) => if(accu exists Release.duplicate(r)) accu else accu :+ r
