@@ -14,8 +14,8 @@ import scala.scalajs.js.timers._
 
 @js.native
 trait Release extends js.Object {
-  val repo: String = js.native
-  val tag: String = js.native
+  val title: String = js.native
+  val url: String = js.native
   val rawTime: String = js.native
   val time: String = js.native
   val description: String = js.native
@@ -31,12 +31,17 @@ object Release {
 
     val time = if(cs.length < 3) "" else s"${cs(2) take 2}.${cs(1)}.${cs(0)}"
 
-    js.Dynamic.literal(repo = repo, tag = json.tag_name, rawTime = json.published_at, time = time, description = json.body).asInstanceOf[Release]
+    // TODO: parse feature / fix counts from body
+    val description = Option(json.name) map { _.toString } getOrElse "(no name)"
+
+    js.Dynamic.literal(url = json.html_url, title = s"$repo ${json.tag_name}", rawTime = json.published_at, time = time, description = description).asInstanceOf[Release]
   }
 
-  def duplicate(r: Release)(other: Release): Boolean = r.repo == other.repo && r.tag == other.tag
+  def duplicate(r: Release)(other: Release): Boolean = r.url == other.url
 
-  def str(r: Release): String = s"${r.rawTime}, ${r.repo}, ${r.tag}"
+  def empty(): Release = js.Dynamic.literal(url = "", title = "-", rawTime = "-", time = "-", description = "-").asInstanceOf[Release]
+
+  def nonEmpty(r: Release): Boolean = r.title != "-"
 }
 
 @js.native
@@ -125,12 +130,12 @@ object App extends JSApp {
 
           case Failure(ex) =>
             println(s"Failed to parse XHR result: ${ex.getMessage}\n${xhr.responseText}")
-            Seq(js.Dynamic.literal(repo = "-", tag = "-", rawTime = "-", time = "-", description = "-").asInstanceOf[Release])
+            Seq(Release.empty())
         }
 
         case Failure(ex) =>
           println(s"XHR fail: ${ex.getMessage}")
-          Seq(js.Dynamic.literal(repo = "-", tag = "-", rawTime = "-", time = "-", description = "-").asInstanceOf[Release])
+          Seq(Release.empty())
       }
     }
 
@@ -140,7 +145,7 @@ object App extends JSApp {
         loadingLabel.innerHTML = s"Updating..."
 
         // Org admins can see unreleased tags
-        val released: Seq[Release] = rrs.flatten filter { r => r.rawTime != null && r.repo != "-" }
+        val released: Seq[Release] = rrs.flatten filter Release.nonEmpty // { r => r.rawTime != null && r.tag != "-" }
 
         val deduped: Seq[Release] = released.foldLeft[Seq[Release]] (Seq[Release]()) {
           case (accu, r) => if(accu exists Release.duplicate(r)) accu else accu :+ r

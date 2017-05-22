@@ -18,15 +18,11 @@
                 <template class="header">Date</template>
                 <template>[[item.time]]</template>
             </vaadin-grid-column>
-            <vaadin-grid-column class="repo" width="100px" flex-grow="1">
-                <template class="header">Product</template>
-                <template>[[item.repo]]</template>
-            </vaadin-grid-column>
-            <vaadin-grid-column class="tag" width="75px" flex-grow="1">
+            <vaadin-grid-column width="150px" flex-grow="1">
                 <template class="header">Release</template>
-                <template>[[item.tag]]</template>
+                <template><a href="[[item.url]]">[[item.title]]</a></template>
             </vaadin-grid-column>
-            <vaadin-grid-column flex-grow="10">
+            <vaadin-grid-column flex-grow="7">
                 <template class="header">Description</template>
                 <template>[[item.description]]</template>
             </vaadin-grid-column>
