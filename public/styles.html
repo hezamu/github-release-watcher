@@ -1,0 +1,37 @@
+<dom-module id='styles'>
+    <template>
+        <style is="custom-style">
+            html, body {
+                margin: 0;
+            }
+
+            body {
+                font-family: 'Helvetica Neue', 'Calibri Light', Roboto, sans-serif;
+            }
+
+            #loading {
+                position: absolute;
+                top: 20%;
+                left: 50%;
+                transform: translateX(-50%);
+            }
+
+            #grid {
+                width: 100vw;
+                height: 100vh;
+
+                --vaadin-grid-body-row-odd-cell: {
+                    background-color: #eee;
+                };
+            }
+
+            .header {
+                font-weight: bold;
+            }
+
+            .hidden {
+                display: none;
+            }
+        </style>
+    </template>
+</dom-module>
