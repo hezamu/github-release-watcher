@@ -9,8 +9,8 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.scalajs.js
 import scala.scalajs.js.JSApp
-import scala.util.{Failure, Success, Try}
 import scala.scalajs.js.timers._
+import scala.util.{Failure, Success, Try}
 
 @js.native
 trait Release extends js.Object {
@@ -45,9 +45,16 @@ object Release {
 }
 
 @js.native
+trait SortOrder extends js.Object {
+  val path: String = js.native
+  val direction: String = js.native
+}
+
+@js.native
 trait DataProviderParams extends js.Object {
   val page: Int = js.native
   val pageSize: Int = js.native
+  val sortOrders: js.Array[SortOrder] = js.native
 }
 
 object App extends JSApp {
@@ -97,6 +104,8 @@ object App extends JSApp {
   private lazy val loadingLabel = dom.document.body.querySelector("#loading").asInstanceOf[Label]
 
   private var releases: js.Array[Release] = js.Array()
+
+  private var sortOrder: Option[SortOrder] = None
 
   private def showReleases(token: String): Unit = {
     loadingLabel.innerHTML = s"Fetching releases for ${repos.size} repositories..."
@@ -151,12 +160,17 @@ object App extends JSApp {
           case (accu, r) => if(accu exists Release.duplicate(r)) accu else accu :+ r
         }
 
-        releases = deduped.sortBy(_.rawTime).reverse.to[js.Array]
+        releases = deduped.to[js.Array]
+
+        // Sort by time in descending order by default
+        sortIfNeeded(Some(js.Dynamic.literal(path = "rawTime", direction = "desc").asInstanceOf[SortOrder]))
 
         setTimeout(1) { // Make sure the loading label updates before starting lazy load
           releaseGrid.size = releases.size
 
           releaseGrid.dataProvider = { (params: DataProviderParams, callback: js.Dynamic) =>
+            sortIfNeeded(params.sortOrders.headOption)
+
             callback(releases.jsSlice(params.pageSize * params.page), params.pageSize)
           }
 
@@ -167,5 +181,17 @@ object App extends JSApp {
 
       case Failure(ex) => println(s"XHR failure: ${ex.getMessage}")
     }
+  }
+
+  def sortIfNeeded(newSortOrder: Option[SortOrder]): Unit = if(sortOrder != newSortOrder) {
+    releases = newSortOrder match {
+      case Some(so) if so.path == "rawTime" => releases sortBy { _.rawTime }
+      case Some(so) if so.path == "title" => releases sortBy { _.title }
+      case None => releases
+    }
+
+    if(newSortOrder exists {_.direction == "desc"}) releases = releases.reverse
+
+    sortOrder = newSortOrder
   }
 }
