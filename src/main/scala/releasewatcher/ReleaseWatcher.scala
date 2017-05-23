@@ -145,7 +145,7 @@ object App extends JSApp {
         loadingLabel.innerHTML = s"Updating..."
 
         // Org admins can see unreleased tags
-        val released: Seq[Release] = rrs.flatten filter Release.nonEmpty // { r => r.rawTime != null && r.tag != "-" }
+        val released: Seq[Release] = rrs.flatten filter Release.nonEmpty
 
         val deduped: Seq[Release] = released.foldLeft[Seq[Release]] (Seq[Release]()) {
           case (accu, r) => if(accu exists Release.duplicate(r)) accu else accu :+ r
