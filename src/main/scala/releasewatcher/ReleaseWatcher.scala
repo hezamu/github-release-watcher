@@ -51,10 +51,17 @@ trait SortOrder extends js.Object {
 }
 
 @js.native
+trait ColumnFilter extends js.Object {
+  val path: String = js.native
+  val value: String = js.native
+}
+
+@js.native
 trait DataProviderParams extends js.Object {
   val page: Int = js.native
   val pageSize: Int = js.native
   val sortOrders: js.Array[SortOrder] = js.native
+  val filters: js.Array[ColumnFilter] = js.native
 }
 
 object App extends JSApp {
@@ -163,15 +170,18 @@ object App extends JSApp {
         releases = deduped.to[js.Array]
 
         // Sort by time in descending order by default
-        sortIfNeeded(Some(js.Dynamic.literal(path = "rawTime", direction = "desc").asInstanceOf[SortOrder]))
+        releases = sortIfNeeded(Some(js.Dynamic.literal(path = "rawTime", direction = "desc").asInstanceOf[SortOrder]))
 
         setTimeout(1) { // Make sure the loading label updates before starting lazy load
           releaseGrid.size = releases.size
 
           releaseGrid.dataProvider = { (params: DataProviderParams, callback: js.Dynamic) =>
-            sortIfNeeded(params.sortOrders.headOption)
+            val sorted = sortIfNeeded(params.sortOrders.headOption)
+            val filtered = filterIfNeeded(sorted, params.filters)
 
-            callback(releases.jsSlice(params.pageSize * params.page), params.pageSize)
+            releaseGrid.size = filtered.size
+
+            callback(filtered.jsSlice(params.pageSize * params.page), params.pageSize)
           }
 
           dom.document.body.querySelector("#loading").classList.add("hidden") // Hide loading message
@@ -183,15 +193,24 @@ object App extends JSApp {
     }
   }
 
-  def sortIfNeeded(newSortOrder: Option[SortOrder]): Unit = if(sortOrder != newSortOrder) {
-    releases = newSortOrder match {
+  // TODO Only supports filtering by repo/tag
+  def filterIfNeeded(rs: js.Array[Release], filters: js.Array[ColumnFilter]): js.Array[Release] = {
+    filters.headOption match {
+      case Some(filter) if filter.path == "title" => rs filter { r => r.title contains filter.value }
+      case Some(filter) => println(s"Unknown filter column '${filter.path}"); rs
+      case _ => rs // No filters
+    }
+  }
+
+  def sortIfNeeded(newSortOrder: Option[SortOrder]): js.Array[Release] = if(sortOrder != newSortOrder) {
+    sortOrder = newSortOrder
+
+    val sorted = newSortOrder match {
       case Some(so) if so.path == "rawTime" => releases sortBy { _.rawTime }
       case Some(so) if so.path == "title" => releases sortBy { _.title }
       case None => releases
     }
 
-    if(newSortOrder exists {_.direction == "desc"}) releases = releases.reverse
-
-    sortOrder = newSortOrder
-  }
+    if(newSortOrder exists {_.direction == "desc"}) sorted.reverse else sorted
+  } else releases
 }

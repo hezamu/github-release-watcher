@@ -9,6 +9,7 @@
         <script src="https://cdn.vaadin.com/vaadin-core-elements/latest/webcomponentsjs/webcomponents-lite.min.js"></script>
         <link href="https://cdn.vaadin.com/vaadin-core-elements/latest/vaadin-grid/vaadin-grid.html" rel="import">
         <link href="https://cdn.vaadin.com/vaadin-core-elements/latest/vaadin-grid/vaadin-grid-sorter.html" rel="import">
+        <link href="https://cdn.vaadin.com/vaadin-core-elements/latest/vaadin-grid/vaadin-grid-filter.html" rel="import">
 
         <link rel="import" href="public/styles.html">
         <custom-style>
@@ -28,7 +29,9 @@
             </vaadin-grid-column>
             <vaadin-grid-column width="150px" flex-grow="1">
                 <template class="header">
-                    <vaadin-grid-sorter path="title">Release</vaadin-grid-sorter>
+                    <vaadin-grid-filter aria-label="Release" path="title" value="[[_filterRelease]]">
+                        <input placeholder="Repo or tag" value="{{_filterRelease::input}}" focus-target>
+                    </vaadin-grid-filter>
                 </template>
                 <template><a href="[[item.url]]" target="_blank">[[item.title]]</a></template>
             </vaadin-grid-column>
